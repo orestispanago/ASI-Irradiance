@@ -1,4 +1,7 @@
+import logging
+import logging.config
 import os
+import traceback
 
 import cv2
 import keras
@@ -7,6 +10,13 @@ import pandas as pd
 import pvlib
 
 import ftp_utils
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
+logging.getLogger("PIL").setLevel(logging.INFO)
+logging.getLogger("h5py").setLevel(logging.INFO)
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+logger = logging.getLogger(__name__)
 
 CAM_ALT = 24.78
 CAM_LAT = 38.291381749413844
@@ -30,8 +40,8 @@ def crop_image_circle(fname):
     mask = cv2.circle(mask, (center_x, center_y), radius, (255, 255, 255), -1)
     result = cv2.bitwise_and(img, mask)
     crop = result[0:height, center_x - radius : center_x - radius + 2 * radius]
-
     cv2.imwrite("img/cropped/preproc.png", crop)
+    logger.debug(f"Processed image: {fname}.")
 
 
 def calc_SZA(date_time):
@@ -78,20 +88,23 @@ def predict_ghi_dhi(date_time, img_folder="img"):
     )
     model_kd = keras.models.load_model("models/SCNN_Kd_model.h5")
     model_kt = keras.models.load_model("models/SCNN_Kt_model.h5")
-    kd_predictions = model_kd.predict(test_DHI_image)[0][0]
-    kt_predictions = model_kt.predict(test_DHI_image)[0][0]
+    kd_predictions = model_kd.predict(test_DHI_image, verbose=0)[0][0]
+    kt_predictions = model_kt.predict(test_DHI_image, verbose=0)[0][0]
     ghi_clear = calc_ghi_clear(date_time)
     ghi_pred = kt_predictions * ghi_clear
     dhi_pred = kd_predictions * ghi_pred
+    logger.debug(f"Predicted GHI: {ghi_pred}, DHI: {dhi_pred}.")
     result = {
         "Datetime_UTC": date_time,
         "GHI_pred": ghi_pred,
         "DHI_pred": dhi_pred,
     }
     pd.DataFrame([result]).to_csv(LOCAL_CSV, index=False)
+    logger.debug(f"Saved predictions to: {LOCAL_CSV}.")
 
 
 def main():
+    logger.info(f"{'-' * 15} START {'-' * 15}")
     last_remote_file = ftp_utils.get_last_file_path()
     base_name = os.path.basename(last_remote_file)
     date_time = pd.to_datetime(
@@ -103,11 +116,15 @@ def main():
         ftp_utils.download(last_remote_file, local_path)
         crop_image_circle(local_path)
         predict_ghi_dhi(date_time)
-        print("predicted")
         os.remove(local_path)
         ftp_utils.upload(LOCAL_CSV, REMOTE_CSV)
     else:
-        print("sza < 80. Not predicted.")
+        logger.warning("sza < 80. Skipping...")
+    logger.info(f"{'-' * 15} SUCCESS {'-' * 15}")
 
 
-main()
+if __name__ == "__main__":
+    try:
+        main()
+    except:
+        logger.error("uncaught exception: %s", traceback.format_exc())

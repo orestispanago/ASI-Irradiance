@@ -1,9 +1,12 @@
+import logging
 from ftplib import FTP
 
 FTP_IP = ""
 FTP_USER = ""
 FTP_PASS = ""
 FTP_DIR = "/cams/All-Sky/lapup"
+
+logger = logging.getLogger(__name__)
 
 
 def get_last_file_stats(ftp, remote_dir):
@@ -37,11 +40,11 @@ def download(remote_path, local_path):
     with FTP(FTP_IP, FTP_USER, FTP_PASS) as ftp:
         with open(local_path, "wb") as f:
             ftp.retrbinary("RETR " + remote_path, f.write)
-        print("Downloaded file:", local_path)
+        logger.info(f"Downloaded {remote_path} to {local_path}")
 
 
 def upload(local_path, remote_path):
     with FTP(FTP_IP, FTP_USER, FTP_PASS) as ftp:
         with open(local_path, "rb") as f:
             ftp.storbinary(f"STOR {remote_path}", f)
-    print(f"Uploaded {local_path} to {remote_path}")
+    logger.info(f"Uploaded {local_path} to {remote_path}")

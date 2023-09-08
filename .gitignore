@@ -6,3 +6,5 @@ img/
 models/
 
 __pycache__/
+
+*.log
