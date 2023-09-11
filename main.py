@@ -96,8 +96,8 @@ def predict_ghi_dhi(date_time, img_folder="img"):
     logger.debug(f"Predicted GHI: {ghi_pred}, DHI: {dhi_pred}.")
     result = {
         "Datetime_UTC": date_time,
-        "GHI_pred": ghi_pred,
-        "DHI_pred": dhi_pred,
+        "GHI": ghi_pred,
+        "DHI": dhi_pred,
     }
     pd.DataFrame([result]).to_csv(LOCAL_CSV, index=False)
     logger.debug(f"Saved predictions to: {LOCAL_CSV}.")
