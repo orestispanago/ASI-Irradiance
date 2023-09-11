@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 CAM_ALT = 24.78
 CAM_LAT = 38.291381749413844
 CAM_LON = 21.78860648659206
-LOCAL_CSV = "ghi_dhi_predictions.csv"
+LOCAL_CSV = "ghi_dhi_result.csv"
 REMOTE_CSV = f"{ftp_utils.FTP_DIR}/{LOCAL_CSV}"
 
 
@@ -111,7 +111,7 @@ def main():
         base_name[:15], format="%Y%m%d_%H%M%S"
     ).tz_localize("UTC")
     sza = calc_SZA(date_time)
-    if sza < 100:
+    if sza < 80:
         local_path = f"img/{base_name}"
         ftp_utils.download(last_remote_file, local_path)
         crop_image_circle(local_path)
