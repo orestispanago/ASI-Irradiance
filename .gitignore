@@ -1,9 +1,7 @@
 
 *.csv
 
-img/
-
-models/
+*.png
 
 __pycache__/
 

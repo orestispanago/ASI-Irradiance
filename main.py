@@ -76,7 +76,7 @@ def calc_ghi_clear(date_time):
 
 
 def predict_ghi_dhi(date_time, img_folder="img"):
-    test_generator = keras.preprocessing.image.ImageDataGenerator(
+    test_generator = keras.src.legacy.preprocessing.image.ImageDataGenerator(
         rescale=1.0 / 255
     )
     test_DHI_image = test_generator.flow_from_directory(
