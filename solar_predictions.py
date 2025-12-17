@@ -6,7 +6,7 @@ from solar_calculations import calc_ghi_clear
 logger = logging.getLogger(__name__)
 
 
-def predict_ghi_dhi(date_time, img_folder="img", dest_csv="ghi_dhi_result.csv"):
+def predict_ghi_dhi(date_time, img_folder="img"):
     test_generator = keras.src.legacy.preprocessing.image.ImageDataGenerator(
         rescale=1.0 / 255
     )
@@ -30,5 +30,6 @@ def predict_ghi_dhi(date_time, img_folder="img", dest_csv="ghi_dhi_result.csv"):
         "GHI": ghi_pred,
         "DHI": dhi_pred,
     }
-    pd.DataFrame([result]).to_csv(dest_csv, index=False)
-    logger.debug(f"Saved predictions to: {dest_csv}.")
+    # pd.DataFrame([result]).to_csv(dest_csv, index=False)
+    # logger.debug(f"Saved predictions to: {dest_csv}.")
+    return pd.DataFrame([result])

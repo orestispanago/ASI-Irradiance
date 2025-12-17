@@ -34,7 +34,8 @@ def main():
         local_path = f"img/{base_name}"
         ftp_utils.download(last_remote_file, local_path)
         crop_image_circle(local_path)
-        predict_ghi_dhi(date_time)
+        result = predict_ghi_dhi(date_time)
+        result.to_csv(LOCAL_CSV, index=False)
         os.remove(local_path)
         ftp_utils.upload(LOCAL_CSV, REMOTE_CSV)
     else:
